@@ -1,0 +1,118 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum WebinarType {
+  LIVE
+  RECORDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  registrations   Registration[]
+  webinarsCreated Webinar[]
+
+  @@map("users")
+}
+
+model Webinar {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  speaker     String
+  speakerBio  String?     @map("speaker_bio")
+  imageUrl    String?     @map("image_url")
+  date        DateTime
+  durationMin Int         @default(60) @map("duration_min")
+  category    String
+  type        WebinarType @default(LIVE)
+  price       Decimal     @default(0) @db.Decimal(10, 2)
+  seats       Int         @default(100)
+  isPublished Boolean     @default(true) @map("is_published")
+
+  // Zoom integration
+  zoomMeetingId String?  @map("zoom_meeting_id")
+  zoomJoinUrl   String?  @map("zoom_join_url")
+  zoomStartUrl  String?  @map("zoom_start_url")
+  zoomPassword  String?  @map("zoom_password")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String @map("created_by_id")
+
+  registrations Registration[]
+
+  @@map("webinars")
+}
+
+model Registration {
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
+  webinarId    String        @map("webinar_id")
+  registeredAt DateTime      @default(now()) @map("registered_at")
+
+  // Payment tracking
+  paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
+  stripeSessionId String?       @map("stripe_session_id")
+  stripePaymentId String?       @map("stripe_payment_id")
+  amountPaid      Decimal?      @db.Decimal(10, 2) @map("amount_paid")
+  paidAt          DateTime?     @map("paid_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  webinar Webinar @relation(fields: [webinarId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, webinarId])
+  @@map("registrations")
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  company   String?
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contacts")
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  subscribedAt DateTime @default(now()) @map("subscribed_at")
+
+  @@map("newsletter_subscribers")
+}
