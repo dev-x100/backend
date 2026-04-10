@@ -90,6 +90,7 @@ model Registration {
   stripePaymentId String?       @map("stripe_payment_id")
   amountPaid      Decimal?      @db.Decimal(10, 2) @map("amount_paid")
   paidAt          DateTime?     @map("paid_at")
+  reminderSentAt  DateTime?     @map("reminder_sent_at")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   webinar Webinar @relation(fields: [webinarId], references: [id], onDelete: Cascade)

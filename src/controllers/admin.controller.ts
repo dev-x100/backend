@@ -66,6 +66,21 @@ export async function adminListWebinars(req: Request, res: Response): Promise<vo
   res.json({ webinars });
 }
 
+// GET /api/admin/webinars/:id
+export async function adminGetWebinar(req: Request, res: Response): Promise<void> {
+  const webinar = await prisma.webinar.findUnique({
+    where: { id: req.params.id as string },
+    include: { _count: { select: { registrations: true } } },
+  });
+
+  if (!webinar) {
+    res.status(404).json({ message: "Webinar not found" });
+    return;
+  }
+
+  res.json({ webinar });
+}
+
 // POST /api/admin/webinars
 export async function adminCreateWebinar(req: Request, res: Response): Promise<void> {
   const parsed = WebinarSchema.safeParse(req.body);
@@ -138,6 +153,53 @@ export async function adminUpdateWebinar(req: Request, res: Response): Promise<v
   }
 
   const d = parsed.data;
+  const nextTitle = d.title ?? existing.title;
+  const nextDate = d.date ? new Date(d.date) : existing.date;
+  const nextDurationMin = d.durationMin ?? existing.durationMin;
+  const nextType = d.type ?? existing.type;
+
+  let zoomChanges:
+    | {
+        zoomMeetingId?: string | null;
+        zoomJoinUrl?: string | null;
+        zoomStartUrl?: string | null;
+        zoomPassword?: string | null;
+      }
+    | undefined;
+
+  if (nextType === "LIVE" && !existing.zoomMeetingId) {
+    try {
+      const meeting = await createZoomMeeting({
+        topic: nextTitle,
+        startTime: nextDate,
+        durationMin: nextDurationMin,
+      });
+      zoomChanges = {
+        zoomMeetingId: meeting.id,
+        zoomJoinUrl: meeting.join_url,
+        zoomStartUrl: meeting.start_url,
+        zoomPassword: meeting.password,
+      };
+    } catch (err) {
+      console.error("Zoom meeting creation failed during update:", err);
+    }
+  }
+
+  if (nextType === "RECORDED" && existing.zoomMeetingId) {
+    try {
+      await deleteZoomMeeting(existing.zoomMeetingId);
+    } catch (err) {
+      console.error("Zoom meeting deletion failed during update:", err);
+    }
+
+    zoomChanges = {
+      zoomMeetingId: null,
+      zoomJoinUrl: null,
+      zoomStartUrl: null,
+      zoomPassword: null,
+    };
+  }
+
   const updated = await prisma.webinar.update({
     where: { id: req.params.id as string },
     data: {
@@ -153,6 +215,7 @@ export async function adminUpdateWebinar(req: Request, res: Response): Promise<v
       ...(d.price !== undefined ? { price: d.price } : {}),
       ...(d.seats !== undefined ? { seats: d.seats } : {}),
       ...(d.isPublished !== undefined ? { isPublished: d.isPublished } : {}),
+      ...(zoomChanges ?? {}),
     },
   });
 

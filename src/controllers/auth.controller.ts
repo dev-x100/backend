@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { z } from "zod";
 import prisma from "../db/client";
 import { sendEmail, welcomeEmail } from "../services/email.service";
@@ -22,7 +22,8 @@ const LoginSchema = z.object({
 
 function signToken(userId: string, role: string) {
   const secret = process.env.JWT_SECRET as string;
-  const token = jwt.sign({ userId, role }, secret);
+  const expiresIn = (process.env.JWT_EXPIRES_IN ?? "7d") as SignOptions["expiresIn"];
+  const token = jwt.sign({ userId, role }, secret, { expiresIn });
   return token;
 }
 

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getDashboardStats,
   adminListWebinars,
+  adminGetWebinar,
   adminCreateWebinar,
   adminUpdateWebinar,
   adminDeleteWebinar,
@@ -21,6 +22,7 @@ router.use(authenticate, requireAdmin);
 router.get("/dashboard", getDashboardStats);
 
 router.get("/webinars", adminListWebinars);
+router.get("/webinars/:id", adminGetWebinar);
 router.post("/webinars", adminCreateWebinar);
 router.put("/webinars/:id", adminUpdateWebinar);
 router.delete("/webinars/:id", adminDeleteWebinar);

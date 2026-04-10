@@ -52,6 +52,26 @@ export async function createCheckoutSession(req: Request, res: Response): Promis
       where: { id: registration.id },
       data: { paymentStatus: "PAID", paidAt: new Date(), amountPaid: 0 },
     });
+
+    const zoomLink = webinar.zoomJoinUrl ?? `${process.env.FRONTEND_URL}/webinars/${webinarId}`;
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: `✅ Registration confirmed: ${webinar.title}`,
+        html: paymentConfirmationEmail({
+          userName: user.name,
+          webinarTitle: webinar.title,
+          speaker: webinar.speaker,
+          date: new Date(webinar.date),
+          amount: 0,
+          zoomJoinUrl: zoomLink,
+          zoomPassword: webinar.zoomPassword ?? undefined,
+        }),
+      });
+    } catch (emailErr) {
+      console.error("Free webinar confirmation email failed:", emailErr);
+    }
+
     res.json({ free: true, message: "Registered for free webinar" });
     return;
   }
