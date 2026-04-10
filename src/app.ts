@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 
 import authRoutes from "./routes/auth.routes";
 import webinarRoutes from "./routes/webinar.routes";
@@ -21,6 +22,33 @@ app.use(
   })
 );
 
+// ─── Rate Limiting ───────────────────────────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests, please try again later." },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many login attempts, please try again later." },
+});
+
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many submissions, please try again later." },
+});
+
+app.use(globalLimiter);
+
 // ─── Stripe webhook needs raw body — mount BEFORE express.json() ─────────────
 app.post(
   "/api/payments/webhook",
@@ -38,10 +66,10 @@ app.get("/health", (_req, res) => {
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/webinars", webinarRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api", contactRoutes);
+app.use("/api", contactLimiter, contactRoutes);
 app.use("/api/payments", paymentRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────────
