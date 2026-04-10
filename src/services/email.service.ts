@@ -18,7 +18,7 @@ interface EmailOptions {
 
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM ?? "TunuDada <noreply@tunudada.com>",
+    from: process.env.EMAIL_FROM ?? "dev-x100 <noreply@dev-x100.com>",
     to,
     subject,
     html,
@@ -53,12 +53,12 @@ function base(content: string): string {
   <body>
     <div class="container">
       <div class="header">
-        <h1>Tunu<span>Dada</span></h1>
+        <h1>dev-x<span>100</span></h1>
       </div>
       <div class="body">${content}</div>
       <div class="footer">
-        © ${new Date().getFullYear()} TunuDada · Professional Webinar Platform<br/>
-        4283 Express Lane, Sarasota, FL 34249 · support@tunudada.com
+        © ${new Date().getFullYear()} dev-x100 · Professional Webinar Platform<br/>
+        4283 Express Lane, Sarasota, FL 34249 · support@dev-x100.com
       </div>
     </div>
   </body>
@@ -112,7 +112,7 @@ export function reminderEmail(opts: {
 
 export function welcomeEmail(opts: { userName: string }): string {
   return base(`
-    <h2 style="color:#002e6d;margin-top:0">Welcome to TunuDada! 🎓</h2>
+    <h2 style="color:#002e6d;margin-top:0">Welcome to dev-x100! 🎓</h2>
     <p>Hi <strong>${opts.userName}</strong>, your account has been created successfully.</p>
     <p>You can now browse our library of compliance, HR, and regulatory webinars — live and on-demand.</p>
     <a href="${process.env.FRONTEND_URL}/webinars" class="btn">Browse Webinars →</a>

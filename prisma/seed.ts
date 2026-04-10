@@ -9,11 +9,11 @@ async function main() {
   // ── Admin user ─────────────────────────────────────────────────────────────
   const adminPassword = await bcrypt.hash("Admin@1234", 12);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@tunudada.com" },
+    where: { email: "admin@dev-x100.com" },
     update: {},
     create: {
-      name: "TunuDada Admin",
-      email: "admin@tunudada.com",
+      name: "dev-x100 Admin",
+      email: "admin@dev-x100.com",
       passwordHash: adminPassword,
       role: Role.ADMIN,
     },
@@ -23,11 +23,11 @@ async function main() {
   // ── Demo user ──────────────────────────────────────────────────────────────
   const userPassword = await bcrypt.hash("User@1234", 12);
   const demoUser = await prisma.user.upsert({
-    where: { email: "user@tunudada.com" },
+    where: { email: "user@dev-x100.com" },
     update: {},
     create: {
       name: "Jane Doe",
-      email: "user@tunudada.com",
+      email: "user@dev-x100.com",
       passwordHash: userPassword,
       role: Role.USER,
     },
@@ -150,8 +150,8 @@ async function main() {
 
   console.log(`✅  ${webinars.length} webinars seeded`);
   console.log("\n🚀  Seed complete!");
-  console.log("   Admin  →  admin@tunudada.com  /  Admin@1234");
-  console.log("   User   →  user@tunudada.com   /  User@1234");
+  console.log("   Admin  →  admin@dev-x100.com  /  Admin@1234");
+  console.log("   User   →  user@dev-x100.com   /  User@1234");
 }
 
 main()

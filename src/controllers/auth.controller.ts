@@ -54,7 +54,7 @@ export async function register(req: Request, res: Response): Promise<void> {
   // Send welcome email (non-blocking)
   sendEmail({
     to: user.email,
-    subject: "Welcome to TunuDada! 🎓",
+    subject: "Welcome to dev-x100! 🎓",
     html: welcomeEmail({ userName: user.name }),
   }).catch((e) => console.error("Welcome email failed:", e));
 

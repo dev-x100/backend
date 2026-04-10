@@ -1,7 +1,7 @@
 {
-  "name": "tunudada-backend",
+  "name": "dev-x100-backend",
   "version": "1.0.0",
-  "description": "TunuDada Webinar Platform - Backend API",
+  "description": "dev-x100 Webinar Platform - Backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
